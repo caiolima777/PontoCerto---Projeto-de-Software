@@ -1,0 +1,75 @@
+
+' ============================================================
+'  CO-03 – Solicitar Resgate de Pontos
+' ============================================================
+@startuml CO-03-SolicitarResgate
+title Diagrama de Sequência – CO-03: Solicitar Resgate de Pontos
+
+actor Cliente
+participant Frontend
+participant ResgateSolicitacaoController
+participant ResgateSolicitacaoService
+participant SecurityContext
+participant UserRepository
+participant ProdutoRepository
+participant ResgateSolicitacaoRepository
+database BancoDeDados
+
+Cliente -> Frontend : solicita resgate de recompensa
+Frontend -> ResgateSolicitacaoController : POST /resgates/solicitar\n(ResgateSolicitacaoRequestDTO)
+activate ResgateSolicitacaoController
+
+ResgateSolicitacaoController -> ResgateSolicitacaoService : criarSolicitacao(request)
+activate ResgateSolicitacaoService
+
+ResgateSolicitacaoService -> SecurityContext : getAuthentication().getName()
+SecurityContext --> ResgateSolicitacaoService : username
+
+ResgateSolicitacaoService -> UserRepository : findByUsername(username)
+activate UserRepository
+UserRepository -> BancoDeDados : SELECT * FROM users WHERE username = ?
+BancoDeDados --> UserRepository : User
+UserRepository --> ResgateSolicitacaoService : User
+deactivate UserRepository
+
+ResgateSolicitacaoService -> ProdutoRepository : findById(produtoId)
+activate ProdutoRepository
+ProdutoRepository -> BancoDeDados : SELECT * FROM produtos WHERE id = ?
+BancoDeDados --> ProdutoRepository : Produto
+ProdutoRepository --> ResgateSolicitacaoService : Produto
+deactivate ProdutoRepository
+
+alt Produto não elegível (valorEmPontos inválido)
+    ResgateSolicitacaoService --> ResgateSolicitacaoController : RuntimeException\n"Produto não elegível à troca por pontos"
+    ResgateSolicitacaoController --> Frontend : 500 Erro interno
+    Frontend --> Cliente : exibe mensagem de erro
+else Pontos insuficientes (user.pontos < produto.valorEmPontos)
+    ResgateSolicitacaoService --> ResgateSolicitacaoController : RuntimeException\n"Usuário não possui pontos suficientes"
+    ResgateSolicitacaoController --> Frontend : 500 Erro interno
+    Frontend --> Cliente : exibe mensagem de erro
+else Resgate válido
+    ResgateSolicitacaoService -> UserRepository : save(user com pontos descontados)
+    activate UserRepository
+    UserRepository -> BancoDeDados : UPDATE users SET pontos = pontos - ?
+    BancoDeDados --> UserRepository : OK
+    UserRepository --> ResgateSolicitacaoService : User atualizado
+    deactivate UserRepository
+
+    ResgateSolicitacaoService -> ResgateSolicitacaoService : gerarCodigo() → UUID 8 chars
+
+    ResgateSolicitacaoService -> ResgateSolicitacaoRepository : save(ResgateSolicitacao\nstatus=PENDENTE)
+    activate ResgateSolicitacaoRepository
+    ResgateSolicitacaoRepository -> BancoDeDados : INSERT INTO resgates_solicitacoes
+    BancoDeDados --> ResgateSolicitacaoRepository : ResgateSolicitacao persistida
+    ResgateSolicitacaoRepository --> ResgateSolicitacaoService : ResgateSolicitacao
+    deactivate ResgateSolicitacaoRepository
+
+    ResgateSolicitacaoService --> ResgateSolicitacaoController : ResgateSolicitacao\n(id, codigoRetirada, status=PENDENTE)
+    deactivate ResgateSolicitacaoService
+
+    ResgateSolicitacaoController --> Frontend : 200 OK\nResgateSolicitacao
+    Frontend --> Cliente : solicitação criada,\nauardando aprovação administrativa
+end
+
+deactivate ResgateSolicitacaoController
+@enduml

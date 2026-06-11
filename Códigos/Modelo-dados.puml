@@ -1,0 +1,136 @@
+@startuml
+
+entity User {
+    * id : BIGINT <<PK>>
+    --
+    nome : VARCHAR
+    email : VARCHAR
+    senha : VARCHAR
+    role : VARCHAR
+}
+
+entity Customer {
+    * id : BIGINT <<PK>>
+    --
+    nome : VARCHAR
+    cpf : VARCHAR
+    telefone : VARCHAR
+    pontos : INT
+}
+
+entity Endereco {
+    * id : BIGINT <<PK>>
+    --
+    logradouro : VARCHAR
+    numero : VARCHAR
+    cidade : VARCHAR
+    cep : VARCHAR
+    customer_id : BIGINT <<FK>>
+}
+
+entity Produto {
+    * id : BIGINT <<PK>>
+    --
+    nome : VARCHAR
+    descricao : VARCHAR
+    preco : DECIMAL
+    estoque : INT
+}
+
+entity Carrinho {
+    * id : BIGINT <<PK>>
+    --
+    valor_total : DECIMAL
+    customer_id : BIGINT <<FK>>
+}
+
+entity ItemCarrinho {
+    * id : BIGINT <<PK>>
+    --
+    quantidade : INT
+    subtotal : DECIMAL
+    carrinho_id : BIGINT <<FK>>
+    produto_id : BIGINT <<FK>>
+}
+
+entity Pedido {
+    * id : BIGINT <<PK>>
+    --
+    data_pedido : DATETIME
+    valor_total : DECIMAL
+    status : VARCHAR
+    customer_id : BIGINT <<FK>>
+}
+
+entity ItemPedido {
+    * id : BIGINT <<PK>>
+    --
+    quantidade : INT
+    subtotal : DECIMAL
+    pedido_id : BIGINT <<FK>>
+    produto_id : BIGINT <<FK>>
+}
+
+entity Promocao {
+    * id : BIGINT <<PK>>
+    --
+    nome : VARCHAR
+    desconto : DECIMAL
+}
+
+entity RegraPontuacao {
+    * id : BIGINT <<PK>>
+    --
+    descricao : VARCHAR
+    pontos_por_compra : INT
+}
+
+entity ResgateSolicitacao {
+    * id : BIGINT <<PK>>
+    --
+    data_solicitacao : DATETIME
+    status : VARCHAR
+    customer_id : BIGINT <<FK>>
+    regra_id : BIGINT <<FK>>
+}
+
+entity Aviso {
+    * id : BIGINT <<PK>>
+    --
+    titulo : VARCHAR
+    mensagem : TEXT
+}
+
+entity VerificationToken {
+    * id : BIGINT <<PK>>
+    --
+    token : VARCHAR
+    expiracao : DATETIME
+    user_id : BIGINT <<FK>>
+}
+
+User ||--|| Customer
+
+Customer ||--o{ Endereco
+
+Customer ||--|| Carrinho
+
+Carrinho ||--o{ ItemCarrinho
+
+Produto ||--o{ ItemCarrinho
+
+Customer ||--o{ Pedido
+
+Pedido ||--o{ ItemPedido
+
+Produto ||--o{ ItemPedido
+
+Produto }o--o{ Promocao
+
+Customer ||--o{ ResgateSolicitacao
+
+RegraPontuacao ||--o{ ResgateSolicitacao
+
+User ||--o| VerificationToken
+
+@enduml

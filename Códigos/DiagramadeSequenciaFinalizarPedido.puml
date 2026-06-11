@@ -1,0 +1,77 @@
+
+
+' ============================================================
+'  CO-02 – Finalizar Pedido
+' ============================================================
+@startuml CO-02-FinalizarPedido
+title Diagrama de Sequência – CO-02: Finalizar Pedido
+
+actor Cliente
+participant Frontend
+participant PedidoController
+participant PedidoService
+participant UserRepository
+participant ProdutoRepository
+participant PedidoRepository
+participant ItemPedidoRepository
+database BancoDeDados
+
+Cliente -> Frontend : confirma pedido com itens do carrinho
+Frontend -> PedidoController : POST /pedidos\n(PedidoCreateDTO)
+activate PedidoController
+
+PedidoController -> PedidoService : criarPedido(dto)
+activate PedidoService
+
+PedidoService -> UserRepository : findById(userId)
+activate UserRepository
+UserRepository -> BancoDeDados : SELECT * FROM users WHERE id = ?
+BancoDeDados --> UserRepository : User
+UserRepository --> PedidoService : User
+deactivate UserRepository
+
+alt Usuário não encontrado
+    PedidoService --> PedidoController : RuntimeException\n"Usuário não encontrado"
+    PedidoController --> Frontend : 500 Erro interno
+    Frontend --> Cliente : exibe mensagem de erro
+else Usuário encontrado
+    PedidoService -> PedidoRepository : save(Pedido)
+    activate PedidoRepository
+    PedidoRepository -> BancoDeDados : INSERT INTO pedidos
+    BancoDeDados --> PedidoRepository : Pedido persistido
+    PedidoRepository --> PedidoService : Pedido (com ID gerado)
+    deactivate PedidoRepository
+
+    loop para cada item do carrinho
+        PedidoService -> ProdutoRepository : findById(produtoId)
+        activate ProdutoRepository
+        ProdutoRepository -> BancoDeDados : SELECT * FROM produtos WHERE id = ?
+        BancoDeDados --> ProdutoRepository : Produto
+        ProdutoRepository --> PedidoService : Produto
+        deactivate ProdutoRepository
+
+        PedidoService -> ItemPedidoRepository : save(ItemPedido)
+        activate ItemPedidoRepository
+        ItemPedidoRepository -> BancoDeDados : INSERT INTO itens_pedido
+        BancoDeDados --> ItemPedidoRepository : ItemPedido persistido
+        ItemPedidoRepository --> PedidoService : ItemPedido
+        deactivate ItemPedidoRepository
+    end
+
+    PedidoService -> PedidoRepository : save(Pedido com valorTotal)
+    activate PedidoRepository
+    PedidoRepository -> BancoDeDados : UPDATE pedidos SET valor_total = ?
+    BancoDeDados --> PedidoRepository : OK
+    PedidoRepository --> PedidoService : Pedido atualizado
+    deactivate PedidoRepository
+
+    PedidoService --> PedidoController : PedidoDTO
+    deactivate PedidoService
+
+    PedidoController --> Frontend : 200 OK\nPedidoDTO (id, itens, valorTotal, status)
+    Frontend --> Cliente : pedido finalizado com sucesso
+end
+
+deactivate PedidoController
+@enduml
+

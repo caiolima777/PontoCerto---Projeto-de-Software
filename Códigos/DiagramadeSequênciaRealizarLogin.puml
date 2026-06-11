@@ -1,0 +1,50 @@
+' ============================================================
+'  CO-01 – Realizar Login
+' ============================================================
+@startuml CO-01-RealizarLogin
+title Diagrama de Sequência – CO-01: Realizar Login
+
+actor Cliente
+participant Frontend
+participant AuthController
+participant AuthenticationManager
+participant UserRepository
+participant JwtService
+database BancoDeDados
+
+Cliente -> Frontend : informa username e senha
+Frontend -> AuthController : POST /auth/login\n(AuthRequest)
+activate AuthController
+
+AuthController -> AuthenticationManager : authenticate(\n  UsernamePasswordAuthenticationToken)
+activate AuthenticationManager
+AuthenticationManager --> AuthController : autenticação OK
+deactivate AuthenticationManager
+
+AuthController -> UserRepository : findByUsername(username)
+activate UserRepository
+UserRepository -> BancoDeDados : SELECT * FROM users\nWHERE username = ?
+BancoDeDados --> UserRepository : dados do usuário
+UserRepository --> AuthController : User
+deactivate UserRepository
+
+alt Conta não verificada (enabled = false)
+    AuthController --> Frontend : 403 FORBIDDEN\n"Conta não verificada"
+    Frontend --> Cliente : exibe mensagem de erro
+else Conta ativa
+    AuthController -> JwtService : generateToken(username, roles)
+    activate JwtService
+    JwtService --> AuthController : accessToken (JWT, 15 min)
+    deactivate JwtService
+
+    AuthController -> JwtService : generateRefreshToken(username, roles)
+    activate JwtService
+    JwtService --> AuthController : refreshToken (JWT, 7 dias)
+    deactivate JwtService
+
+    AuthController --> Frontend : 200 OK\nAuthResponse(accessToken, roles)\n+ Set-Cookie: jwt, refresh (HttpOnly)
+    Frontend --> Cliente : login realizado com sucesso
+end
+
+deactivate AuthController
+@enduml
