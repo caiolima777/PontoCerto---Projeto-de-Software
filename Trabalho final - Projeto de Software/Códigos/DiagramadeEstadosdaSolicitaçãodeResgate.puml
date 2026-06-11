@@ -1,0 +1,15 @@
+@startuml
+
+[*] --> Pendente
+
+Pendente --> Aprovado : aprovação administrador
+
+Pendente --> Cancelado : cancelamento
+
+Aprovado --> Entregue : recompensa entregue
+
+Entregue --> [*]
+
+Cancelado --> [*]
+
+@enduml

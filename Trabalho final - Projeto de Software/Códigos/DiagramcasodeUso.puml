@@ -1,0 +1,68 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Cliente
+actor Administrador
+
+rectangle "Sistema Ponto Certo" {
+
+  usecase "UC-01\nRealizar Cadastro" as UC01
+  usecase "UC-02\nRealizar Login" as UC02
+  usecase "UC-03\nGerenciar Perfil" as UC03
+  usecase "UC-04\nGerenciar Endereços" as UC04
+
+  usecase "UC-05\nVisualizar Produtos" as UC05
+  usecase "UC-06\nAdicionar ao Carrinho" as UC06
+  usecase "UC-07\nGerenciar Carrinho" as UC07
+  usecase "UC-08\nFinalizar Pedido" as UC08
+  usecase "UC-09\nConsultar Pedidos" as UC09
+
+  usecase "UC-10\nConsultar Promoções" as UC10
+  usecase "UC-11\nConsultar Avisos" as UC11
+
+  usecase "UC-12\nConsultar Pontos" as UC12
+  usecase "UC-13\nSolicitar Resgate" as UC13
+
+  usecase "UC-14\nGerenciar Produtos" as UC14
+  usecase "UC-15\nGerenciar Promoções" as UC15
+  usecase "UC-16\nGerenciar Pedidos" as UC16
+  usecase "UC-17\nGerenciar Usuários" as UC17
+  usecase "UC-18\nGerenciar Avisos" as UC18
+  usecase "UC-19\nGerenciar Regras\n de Pontuação" as UC19
+  usecase "UC-20\nGerenciar Solicitações\n de Resgate" as UC20
+
+  usecase "Autenticar Usuário" as AUTH
+  usecase "Calcular Pontos" as PONTOS
+  usecase "Validar Saldo de Pontos" as SALDO
+}
+
+Cliente --> UC01
+Cliente --> UC02
+Cliente --> UC03
+Cliente --> UC04
+Cliente --> UC05
+Cliente --> UC06
+Cliente --> UC07
+Cliente --> UC08
+Cliente --> UC09
+Cliente --> UC10
+Cliente --> UC11
+Cliente --> UC12
+Cliente --> UC13
+
+Administrador --> UC14
+Administrador --> UC15
+Administrador --> UC16
+Administrador --> UC17
+Administrador --> UC18
+Administrador --> UC19
+Administrador --> UC20
+
+UC02 .> AUTH : <<include>>
+
+UC08 .> PONTOS : <<include>>
+
+UC13 .> SALDO : <<include>>
+
+@enduml

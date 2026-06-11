@@ -1,0 +1,106 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+
+class User {
+  id : Long
+  nome : String
+  email : String
+  senha : String
+  role : String
+}
+
+class Customer {
+  id : Long
+  nome : String
+  cpf : String
+  telefone : String
+  pontos : Integer
+}
+
+class Endereco {
+  id : Long
+  logradouro : String
+  numero : String
+  cidade : String
+  cep : String
+}
+
+class Produto {
+  id : Long
+  nome : String
+  preco : Double
+  estoque : Integer
+}
+
+class Carrinho {
+  id : Long
+  valorTotal : Double
+}
+
+class ItemCarrinho {
+  id : Long
+  quantidade : Integer
+  subtotal : Double
+}
+
+class Pedido {
+  id : Long
+  dataPedido : Date
+  valorTotal : Double
+  status : String
+}
+
+class ItemPedido {
+  id : Long
+  quantidade : Integer
+  subtotal : Double
+}
+
+class Promocao {
+  id : Long
+  nome : String
+  desconto : Double
+}
+
+class RegraPontuacao {
+  id : Long
+  descricao : String
+  pontosPorCompra : Integer
+}
+
+class ResgateSolicitacao {
+  id : Long
+  dataSolicitacao : Date
+  status : String
+}
+
+class Aviso {
+  id : Long
+  titulo : String
+  mensagem : String
+}
+
+User "1" -- "1" Customer
+
+Customer "1" -- "0..*" Endereco
+
+Customer "1" -- "1" Carrinho
+
+Carrinho "1" -- "0..*" ItemCarrinho
+
+Produto "1" -- "0..*" ItemCarrinho
+
+Customer "1" -- "0..*" Pedido
+
+Pedido "1" -- "1..*" ItemPedido
+
+Produto "1" -- "0..*" ItemPedido
+
+Produto "0..*" -- "0..*" Promocao
+
+Customer "1" -- "0..*" ResgateSolicitacao
+
+RegraPontuacao "1" -- "0..*" ResgateSolicitacao
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+
+object Cliente
+object Frontend
+object PedidoController
+object PedidoService
+object CarrinhoService
+object PedidoRepository
+object BancoDeDados
+
+Cliente --> Frontend : 1: confirmarCompra()
+
+Frontend --> PedidoController : 2: criarPedido()
+
+PedidoController --> PedidoService : 3: criarPedido()
+
+PedidoService --> CarrinhoService : 4: obterCarrinho()
+
+CarrinhoService --> PedidoService : 5: retornarItens()
+
+PedidoService --> PedidoService : 6: calcularTotal()
+
+PedidoService --> PedidoService : 7: calcularPontos()
+
+PedidoService --> PedidoRepository : 8: salvarPedido()
+
+PedidoRepository --> BancoDeDados : 9: INSERT pedido
+
+BancoDeDados --> PedidoRepository : 10: pedido salvo
+
+PedidoRepository --> PedidoService : 11: pedido
+
+PedidoService --> PedidoController : 12: pedido criado
+
+PedidoController --> Frontend : 13: resposta
+
+Frontend --> Cliente : 14: compra concluída
+
+@enduml

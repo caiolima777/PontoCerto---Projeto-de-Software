@@ -1,0 +1,34 @@
+@startuml
+
+object Cliente
+object Frontend
+object AuthController
+object AuthService
+object UserRepository
+object BancoDeDados
+
+Cliente --> Frontend : 1: informarCredenciais()
+
+Frontend --> AuthController : 2: login()
+
+AuthController --> AuthService : 3: autenticar()
+
+AuthService --> UserRepository : 4: buscarUsuario()
+
+UserRepository --> BancoDeDados : 5: SELECT
+
+BancoDeDados --> UserRepository : 6: dadosUsuario
+
+UserRepository --> AuthService : 7: usuario
+
+AuthService --> AuthService : 8: validarSenha()
+
+AuthService --> AuthService : 9: gerarJWT()
+
+AuthService --> AuthController : 10: token
+
+AuthController --> Frontend : 11: resposta
+
+Frontend --> Cliente : 12: login realizado
+
+@enduml
